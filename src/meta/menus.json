@@ -1,0 +1,95 @@
+{
+    "superadmin": [
+        {
+            "key": "dashboard",
+            "label": "Dashboard",
+            "path": "/dashboard"
+        },
+        {
+            "key": "libraries",
+            "label": "Libraries",
+            "path": "/libraries"
+        },
+        {
+            "key": "books",
+            "label": "Books",
+            "path": "/books"
+        },
+        {
+            "key": "users",
+            "label": "Users",
+            "path": "/users"
+        },
+        {
+            "key": "borrow-requests",
+            "label": "Borrow Requests",
+            "path": "/borrow-requests"
+        },
+        {
+            "key": "borrowed-books",
+            "label": "Borrowed Books",
+            "path": "/borrowed-books"
+        }
+    ],
+    "admin": [
+        {
+            "key": "dashboard",
+            "label": "Dashboard",
+            "path": "/dashboard"
+        },
+        {
+            "key": "books",
+            "label": "Books",
+            "path": "/books"
+        },
+        {
+            "key": "users",
+            "label": "Users",
+            "path": "/users"
+        }
+    ],
+    "librarian": [
+        {
+            "key": "dashboard",
+            "label": "Dashboard",
+            "path": "/dashboard"
+        },
+        {
+            "key": "books",
+            "label": "Books",
+            "path": "/books"
+        },
+        {
+            "key": "members",
+            "label": "Members",
+            "path": "/members"
+        },
+        {
+            "key": "borrowed-books",
+            "label": "Borrowed Books",
+            "path": "/borrowed-books"
+        }
+    ],
+    "member": [
+        {
+            "key": "dashboard",
+            "label": "Dashboard",
+            "path": "/dashboard"
+        },
+        {
+            "key": "books",
+            "label": "Books",
+            "path": "/books"
+        },
+        {
+            "key": "borrow-requests",
+            "label": "Borrow Requests",
+            "path": "/borrow-requests"
+        },
+        {
+            "key": "borrowed-books",
+            "label": "Borrowed Books",
+            "path": "/borrowed-books"
+        }
+    ]
+}

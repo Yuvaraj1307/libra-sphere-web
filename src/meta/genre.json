@@ -1,0 +1,138 @@
+[
+    {
+        "label": "Fiction",
+        "value": "fiction"
+    },
+    {
+        "label": "Non-Fiction",
+        "value": "non_fiction"
+    },
+    {
+        "label": "Science Fiction",
+        "value": "science_fiction"
+    },
+    {
+        "label": "Mystery",
+        "value": "mystery"
+    },
+    {
+        "label": "Thriller",
+        "value": "thriller"
+    },
+    {
+        "label": "Horror",
+        "value": "horror"
+    },
+    {
+        "label": "Romance",
+        "value": "romance"
+    },
+    {
+        "label": "Fantasy",
+        "value": "fantasy"
+    },
+    {
+        "label": "Biography",
+        "value": "biography"
+    },
+    {
+        "label": "History",
+        "value": "history"
+    },
+    {
+        "label": "Self Help",
+        "value": "self_help"
+    },
+    {
+        "label": "Poetry",
+        "value": "poetry"
+    },
+    {
+        "label": "Drama",
+        "value": "drama"
+    },
+    {
+        "label": "Comedy",
+        "value": "comedy"
+    },
+    {
+        "label": "Adventure",
+        "value": "adventure"
+    },
+    {
+        "label": "Children",
+        "value": "children"
+    },
+    {
+        "label": "Young Adult",
+        "value": "young_adult"
+    },
+    {
+        "label": "Reference",
+        "value": "reference"
+    },
+    {
+        "label": "Cookbooks",
+        "value": "cookbooks"
+    },
+    {
+        "label": "Travel",
+        "value": "travel"
+    },
+    {
+        "label": "Art",
+        "value": "art"
+    },
+    {
+        "label": "Religion",
+        "value": "religion"
+    },
+    {
+        "label": "Science",
+        "value": "science"
+    },
+    {
+        "label": "Health",
+        "value": "health"
+    },
+    {
+        "label": "Business",
+        "value": "business"
+    },
+    {
+        "label": "Finance",
+        "value": "finance"
+    },
+    {
+        "label": "Technology",
+        "value": "technology"
+    },
+    {
+        "label": "Philosophy",
+        "value": "philosophy"
+    },
+    {
+        "label": "Education",
+        "value": "education"
+    },
+    {
+        "label": "Sports",
+        "value": "sports"
+    },
+    {
+        "label": "Fitness",
+        "value": "fitness"
+    },
+    {
+        "label": "Music",
+        "value": "music"
+    },
+    {
+        "label": "Entertainment",
+        "value": "entertainment"
+    },
+    {
+        "label": "Other",
+        "value": "other"
+    }
+]
