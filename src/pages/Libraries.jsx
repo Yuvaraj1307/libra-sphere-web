@@ -121,6 +121,10 @@ const Libraries = () => {
         } else {
             form.setFieldsValue(state)
         }
+
+        return () => {
+            form.resetFields();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state, mode]);
 
@@ -128,7 +132,6 @@ const Libraries = () => {
         <Spin
             spinning={loading}
             className='h-100'
-            size='large'
         >
             <Col span={24} className='container h-100'>
                 {

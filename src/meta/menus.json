@@ -1,5 +1,5 @@
 {
-    "superadmin": [
+    "super_admin": [
         {
             "key": "dashboard",
             "label": "Dashboard",
@@ -46,6 +46,21 @@
             "key": "users",
             "label": "Users",
             "path": "/users"
+        },
+        {
+            "key": "borrow-requests",
+            "label": "Borrow Requests",
+            "path": "/borrow-requests"
+        },
+        {
+            "key": "checkout-books",
+            "label": "Checkout Books",
+            "path": "/checkout-books"
+        },
+        {
+            "key": "borrowed-books",
+            "label": "Borrowed Books",
+            "path": "/borrowed-books"
         }
     ],
     "librarian": [
@@ -63,6 +78,16 @@
             "key": "members",
             "label": "Members",
             "path": "/members"
+        },
+        {
+            "key": "borrow-requests",
+            "label": "Borrow Requests",
+            "path": "/borrow-requests"
+        },
+        {
+            "key": "checkout-books",
+            "label": "Checkout Books",
+            "path": "/checkout-books"
         },
         {
             "key": "borrowed-books",

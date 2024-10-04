@@ -23,9 +23,9 @@ const BorrowRequests = () => {
 
     const columns = [
         {
-            key: 'name',
-            dataIndex: 'name',
-            title: 'Name',
+            key: 'title',
+            dataIndex: 'title',
+            title: 'Title',
         },
         {
             key: 'request_date',
@@ -34,7 +34,8 @@ const BorrowRequests = () => {
             render: (val) => (
                 <>{dayjs(val).format('MMM DD YYYY')}</>
             )
-        },{
+        },
+        {
             key: 'status',
             dataIndex: 'status',
             title: 'Status',
@@ -46,18 +47,22 @@ const BorrowRequests = () => {
             title: 'Actions',
             dataIndex: 'id',
             key: 'actions',
-            render: (id, user) => (
+            render: (id, record) => (
                 <Row style={{ gap: '20px' }}>
-                    <span
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleClickEditUser(user)}
-                    >
-                        <EditOutlined />
-                    </span>
+                    {
+                        record.status === 'pending' && (
+                            <span
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleClickEditBorrowRequest(record)}
+                            >
+                                <EditOutlined />
+                            </span>
+                        )
+                    }
                     <Popconfirm
-                        title="Delete the user"
-                        description="Are you sure to delete this user?"
-                        onConfirm={handleDeleteUser}
+                        title="Delete the borrow request"
+                        description="Are you sure to delete this borrow request?"
+                        onConfirm={handleDeleteBorrwoRequest}
                         onCancel={() => setDeleteBorrowRequestId()}
                         okText="Yes"
                         cancelText="No"
@@ -79,45 +84,47 @@ const BorrowRequests = () => {
         navigate('/borrow-requests/add');
     }
 
-    const handleClickEditUser = (user) => {
-        navigate('/borrow-requests/edit', { state: user })
+    const handleClickEditBorrowRequest = (borrowRequest) => {
+        navigate('/borrow-requests/edit', { state: borrowRequest })
     }
 
-    const handleDeleteUser = async () => {
+    const handleDeleteBorrwoRequest = async () => {
         try {
             setLoading(true);
             const { success } = await deleteBarrowRequests(deleteBorrowRequestId);
             if (success) {
-                message.success('User deleted successfully')
+                message.success('Borrow Request deleted successfully')
                 await fetchBorrowRequests();
             } else {
-                message.error('Failed to delete user')
+                message.error('Failed to delete borrow request')
             }
         } catch (error) {
-            message.error(error?.data || 'Failed to delete user')
+            message.error(error?.data || 'Failed to delete borrow request')
         } finally {
             setLoading(false)
         }
     }
 
     const fetchBorrowRequests = useCallback(async () => {
-        if (userInfo && userInfo?.library_id) {
-            const { library_id } = userInfo;
-            try {
-                setLoading(true);
-                const { success, data = [] } = await getBarrowRequests({ library_id });
-                if (success) {
-                    setBorrowRequests(data);
-                } else {
-                    message.error('Failed to fetch borrow requests')
-                }
-            } catch (error) {
-                message.error(error?.data || 'Failed to fetch borrow requests')
-            } finally {
-                setLoading(false);
+        try {
+            setLoading(true);
+            const { success, data = [] } = await getBarrowRequests({ status: userInfo.role === 'librarian' ? 'pending' : undefined });
+            if (success) {
+                setBorrowRequests(data);
+            } else {
+                message.error('Failed to fetch borrow requests')
             }
+        } catch (error) {
+            if (error.message === 'Invalid token') {
+                message.info('Session expired');
+                window.location.href = 'http://localhost:3000/login'
+            } else {
+                message.error(error?.data || 'Failed to fetch borrow requests')
+            }
+        } finally {
+            setLoading(false);
         }
-    }, [setLoading, userInfo]);
+    }, [setLoading, userInfo.role]);
 
     const fetchBooks = useCallback(async () => {
         if (userInfo && userInfo?.library_id) {
@@ -140,26 +147,24 @@ const BorrowRequests = () => {
     }, [setLoading, userInfo]);
 
     const onFinish = async (values) => {
-        const { library_id, id } = userInfo;
-        const payload = { ...values, library_id, user_id: id };
         setLoading(true);
         let response;
         try {
             if (mode === 'edit') {
-                response = await updateBarrowRequests({ ...state, ...payload })
+                response = await updateBarrowRequests({ ...state, ...values })
             } else {
-                response = await createBarrowRequests(payload)
+                response = await createBarrowRequests(values)
             }
             const { success } = response;
             if (success) {
                 navigate('/borrow-requests');
-                message.success(`User ${mode === 'edit' ? 'updated' : 'created'}  successfully`);
+                message.success(`Borrow Request ${mode === 'edit' ? 'updated' : 'created'}  successfully`);
                 form.resetFields();
             } else {
-                message.error(`Failed to ${mode === 'edit' ? 'update' : 'create'} user`);
+                message.error(`Failed to ${mode === 'edit' ? 'update' : 'create'} borrow request`);
             }
         } catch (error) {
-            message.error(error?.data || `Failed to ${mode === 'edit' ? 'update' : 'create'} user`);
+            message.error(error?.data || `Failed to ${mode === 'edit' ? 'update' : 'create'} borrow request`);
         } finally {
             setLoading(false);
         }
@@ -171,26 +176,26 @@ const BorrowRequests = () => {
     }
 
     useEffect(() => {
-        console.log('Loading')
         if (!mode && !state) {
             fetchBorrowRequests();
         } else {
-            console.log('Loading 2')
             form.setFieldsValue(state)
             if (mode === 'add') {
                 form.setFieldValue('status', 'pending')
             }
             fetchBooks();
         }
+
+        return () => {
+            form.resetFields();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state, mode]);
-
 
     return (
         <Spin
             spinning={loading}
             className='h-100'
-            size='large'
         >
             <Col span={24} className='container h-100'>
                 {
@@ -214,16 +219,25 @@ const BorrowRequests = () => {
                                     >
                                         <Select options={books} placeholder='Select Book' />
                                     </Item>
-                                    <Item
-                                        name={'status'}
-                                        rules={[{
-                                            required: true,
-                                            message: 'Status is required'
-                                        }]}
-                                        label={'Status'}
-                                    >
-                                        <Select options={status.map((i) => ({ label: startCase(i), value: i }))} placeholder='Select Status' />
-                                    </Item>
+                                    {
+                                        userInfo.role !== 'member' && (
+                                            <>
+                                                <Item
+                                                    name={'status'}
+                                                    rules={[{
+                                                        required: true,
+                                                        message: 'Status is required'
+                                                    }]}
+                                                    label={'Status'}
+                                                >
+                                                    <Select
+                                                        options={status.map((i) => ({ label: startCase(i), value: i }))}
+                                                        placeholder='Select Status'
+                                                    />
+                                                </Item>
+                                            </>
+                                        )
+                                    }
                                     <Item>
                                         <Row justify='end' style={{ gap: '15px', marginTop: '20px' }}>
                                             <Button
@@ -251,16 +265,20 @@ const BorrowRequests = () => {
                         </Row>
                     ) : (
                         <>
-                            <Row justify='end' style={{ marginBottom: '10px' }}>
-                                <Button
-                                    type='primary'
-                                    size='large'
-                                    onClick={handleClickAdd}
-                                    icon={<PlusOutlined />}
-                                >
-                                    Add Borrow Request
-                                </Button>
-                            </Row>
+                            {
+                                userInfo.role === 'member' && (
+                                    <Row justify='end' style={{ marginBottom: '10px' }}>
+                                        <Button
+                                            type='primary'
+                                            size='large'
+                                            onClick={handleClickAdd}
+                                            icon={<PlusOutlined />}
+                                        >
+                                            Add Borrow Request
+                                        </Button>
+                                    </Row>
+                                )
+                            }
                             <Table
                                 dataSource={borrowRequests}
                                 columns={columns}

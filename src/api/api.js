@@ -1,13 +1,6 @@
 import axios from 'axios';
 
 const URL = 'http://localhost:5000/api/v1';
-const token = localStorage.getItem('token');
-const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-};
-
-const user = JSON.parse(localStorage.getItem('user'));
 
 const apiRequest = async (method, props) => {
     const {
@@ -16,7 +9,10 @@ const apiRequest = async (method, props) => {
     const config = {
         method,
         url: `${URL}${pathName}`,
-        headers,
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+        },
         params: { ...params, },
         data,
     };
@@ -33,15 +29,15 @@ export const getAPI = async (pathName, params) => {
 };
 
 export const postAPI = async (pathName, data) => {
-    return apiRequest('POST', { pathName, data: { ...data, created_by: user?.user_uid } });
+    return apiRequest('POST', { pathName, data: { ...data } });
 };
 
 export const putAPI = async (pathName, data) => {
-    return apiRequest('PUT', { pathName, data: { ...data, updated_by: user?.user_uid } });
+    return apiRequest('PUT', { pathName, data: { ...data } });
 };
 
 export const patchAPI = async (pathName, data) => {
-    return apiRequest('PATCH', { pathName, data: { ...data, updated_by: user?.user_uid } });
+    return apiRequest('PATCH', { pathName, data: { ...data } });
 };
 
 export const deleteAPI = async (pathName, data) => {

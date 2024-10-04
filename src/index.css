@@ -29,6 +29,10 @@
     overflow: hidden;
 }
 
+.ant-layout .ant-spin-nested-loading {
+    height: 100%;
+}
+
 .ant-layout-sider,
 .ant-layout-header {
     background-color: #fff !important;

@@ -1,23 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Col, Spin, message, Table, Row, Form, Input, DatePicker, Button, Select } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Col, Form, Row, Button, Select, Spin, message, Table, DatePicker, Input, Popconfirm } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { startCase } from 'lodash';
 import dayjs from 'dayjs'
-import { getBarrowedBooks, updateBarrowedBooks } from '../api/helper';
+import { createBarrowedBooks, deleteBarrowRequests, getBarrowRequests } from '../api/helper';
 import { useAppContext } from '../hooks';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-const status = ['borrowed', 'returned'];
 const { Item, useForm } = Form;
 
-const BorrowedBooks = () => {
+const status = ['borrowed']
+
+const CheckoutBooks = () => {
     const { mode } = useParams();
     const { state } = useLocation();
-    const [form] = useForm();
-    const [borrowedBooks, setBorrowedBooks] = useState([]);
-    const { loading, setLoading, userInfo } = useAppContext();
-    const [borrowedRequestStatus, setBorrowedRequestStatus] = useState('borrowed');
     const navigate = useNavigate();
+    const [form] = useForm();
+    const [borrowedRequests, setBorrowedRequests] = useState([]);
+    const { loading, setLoading } = useAppContext();
+    const [deleteBorrowRequestId, setDeleteBorrowRequestId] = useState();
 
     const columns = [
         {
@@ -26,27 +27,11 @@ const BorrowedBooks = () => {
             title: 'Title',
         },
         {
-            key: 'borrow_date',
-            dataIndex: 'borrow_date',
-            title: 'Borrowed Date',
+            key: 'request_date',
+            dataIndex: 'request_date',
+            title: 'Request Date',
             render: (val) => (
-                <>{val ? dayjs(val).format('MMM DD YYYY') : '-'}</>
-            )
-        },
-        {
-            key: 'due_date',
-            dataIndex: 'due_date',
-            title: 'Due Date',
-            render: (val) => (
-                <>{val ? dayjs(val).format('MMM DD YYYY') : '-'}</>
-            )
-        },
-        {
-            key: 'return_date',
-            dataIndex: 'return_date',
-            title: 'Return Date',
-            render: (val) => (
-                <>{val ? dayjs(val).format('MMM DD YYYY') : '-'}</>
+                <>{dayjs(val).format('MMM DD YYYY')}</>
             )
         },
         {
@@ -58,18 +43,14 @@ const BorrowedBooks = () => {
             )
         },
         {
-            key: 'fine_amount',
-            dataIndex: 'fine_amount',
-            title: 'Fine Amount',
-        },
-        {
             title: 'Actions',
             dataIndex: 'id',
             key: 'actions',
             render: (id, record) => (
                 <Row style={{ gap: '20px' }}>
                     {
-                        record.status !== 'approved' && (
+
+                        record.status === 'approved' && (
                             <span
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => handleClickEditBorrowRequest(record)}
@@ -78,22 +59,54 @@ const BorrowedBooks = () => {
                             </span>
                         )
                     }
+                    <Popconfirm
+                        title="Delete the borrow request"
+                        description="Are you sure to delete this borrow request?"
+                        onConfirm={handleDeleteBorrwoRequest}
+                        onCancel={() => setDeleteBorrowRequestId()}
+                        okText="Yes"
+                        cancelText="No"
+                        open={deleteBorrowRequestId === id}
+                    >
+                        <span
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setDeleteBorrowRequestId(id)}
+                        >
+                            <DeleteOutlined />
+                        </span>
+                    </Popconfirm>
                 </Row>
             ),
         },
-    ];
-
+    ]
 
     const handleClickEditBorrowRequest = (borrowRequest) => {
-        navigate('/borrowed-books/edit', { state: borrowRequest })
+        navigate('/checkout-books/edit', { state: borrowRequest })
     }
 
-    const fetchBorrowedBooks = useCallback(async () => {
+    const handleDeleteBorrwoRequest = async () => {
         try {
             setLoading(true);
-            const { success, data = [] } = await getBarrowedBooks();
+            const { success } = await deleteBarrowRequests(deleteBorrowRequestId);
             if (success) {
-                setBorrowedBooks(data);
+                message.success('Borrow Request deleted successfully')
+                await fetchBorrowedRequests();
+            } else {
+                message.error('Failed to delete borrow request')
+            }
+        } catch (error) {
+            message.error(error?.data || 'Failed to delete borrow request')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchBorrowedRequests = useCallback(async () => {
+        try {
+            setLoading(true);
+            const { success, data = [] } = await getBarrowRequests({ status: 'approved', checkout: true });
+            if (success) {
+                setBorrowedRequests(data);
             } else {
                 message.error('Failed to fetch borrow requests')
             }
@@ -109,18 +122,13 @@ const BorrowedBooks = () => {
         }
     }, [setLoading]);
 
-    const handleCancel = () => {
-        navigate('/borrowed-books');
-        form.resetFields();
-    }
-
     const onFinish = async (values) => {
         try {
             setLoading(true);
-            const response = await updateBarrowedBooks({ ...state, ...values })
+            const response = await createBarrowedBooks({ ...state, ...values })
             const { success } = response;
             if (success) {
-                navigate('/borrowed-books');
+                navigate('/checkout-books');
                 message.success('Checkout completed successfully');
                 form.resetFields();
             } else {
@@ -133,12 +141,16 @@ const BorrowedBooks = () => {
         }
     }
 
+    const handleCancel = () => {
+        navigate('/checkout-books');
+        form.resetFields();
+    }
+
     useEffect(() => {
         if (!mode && !state) {
-            fetchBorrowedBooks();
+            fetchBorrowedRequests();
         } else {
             const { borrow_date, due_date, return_date } = state;
-            console.log('state ==> ', state)
             const data = {
                 ...state,
                 borrow_date: borrow_date ? dayjs(borrow_date) : undefined,
@@ -190,21 +202,6 @@ const BorrowedBooks = () => {
                                     >
                                         <DatePicker placeholder='Select Due date' />
                                     </Item>
-                                    {
-                                        borrowedRequestStatus === 'returned' && (
-
-                                            <Item
-                                                name='return_date'
-                                                rules={[{
-                                                    required: true,
-                                                    message: 'Due date is required'
-                                                }]}
-                                                label={'Return date'}
-                                            >
-                                                <DatePicker placeholder='Select Return date' />
-                                            </Item>
-                                        )
-                                    }
                                     <Item
                                         name={'status'}
                                         rules={[{
@@ -216,7 +213,6 @@ const BorrowedBooks = () => {
                                         <Select
                                             options={status.map((i) => ({ label: startCase(i), value: i }))}
                                             placeholder='Select Status'
-                                            onChange={(value) => setBorrowedRequestStatus(value)}
                                         />
                                     </Item>
                                     <Item>
@@ -247,8 +243,8 @@ const BorrowedBooks = () => {
                     ) : (
                         <>
                             <Table
-                                dataSource={borrowedBooks}
-                                columns={userInfo.role === 'member' ? columns.filter((i) => i.key !== 'actions') : columns}
+                                dataSource={borrowedRequests}
+                                columns={columns}
                                 scroll={{ x: 'auto' }}
                             />
                         </>
@@ -259,4 +255,4 @@ const BorrowedBooks = () => {
     )
 }
 
-export default BorrowedBooks;
+export default CheckoutBooks;

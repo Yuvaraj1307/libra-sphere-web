@@ -110,7 +110,12 @@ const Members = () => {
                     message.error('Failed to fetch members')
                 }
             } catch (error) {
-                message.error(error?.data || 'Failed to fetch members')
+                if (error.message === 'Invalid token') {
+                    message.info('Session expired');
+                    window.location.href = 'http://localhost:3000/login'
+                } else {
+                    message.error(error?.data || 'Failed to fetch members')
+                }
             } finally {
                 setLoading(false);
             }
@@ -153,6 +158,10 @@ const Members = () => {
         } else {
             form.setFieldsValue(state)
         }
+
+        return () => {
+            form.resetFields();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state, mode, userInfo?.library_id, form]);
 
@@ -160,7 +169,6 @@ const Members = () => {
         <Spin
             spinning={loading}
             className='h-100'
-            size='large'
         >
             <Col span={24} className='container h-100'>
                 {

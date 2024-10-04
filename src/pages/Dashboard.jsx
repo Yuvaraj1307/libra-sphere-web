@@ -8,31 +8,35 @@ const { Text } = Typography;
 
 const Dashboard = () => {
   const [data, setData] = useState();
-  const { loading, setLoading, userInfo } = useAppContext();
+  const { loading, setLoading, userInfo, } = useAppContext();
 
   const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true);
-      const { id, role, library_id } = userInfo;
-      const { success, data } = await getUserDashboard({ id, role, library_id });
+      const { success, data } = await getUserDashboard();
       if (success) {
         setData(data)
       } else {
-        message.error('Failed to load libraries')
+        message.error(`Failed to load ${userInfo.name}'s dashboard`)
       }
     } catch (error) {
-      message.error('Failed to load libraries')
+      if (error.message === 'Invalid token') {
+        message.info('Session expired');
+        window.location.href = 'http://localhost:3000/login'
+      } else {
+        message.error(`Failed to load ${userInfo.name}'s dashboard`)
+      }
     } finally {
       setLoading(false);
     }
-  }, [setLoading, userInfo])
+  }, [setLoading, userInfo.name])
 
   useEffect(() => {
-    if (userInfo?.library_id) {
-      fetchDashboard()
+    if (userInfo) {
+      fetchDashboard();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInfo?.library_id])
+  }, [userInfo])
 
   const renderStyledTitle = (icon, title) => (
     <Text style={{ fontSize: "16px", fontWeight: "bold", display: "flex", alignItems: "center" }}>
@@ -44,20 +48,19 @@ const Dashboard = () => {
     <Spin
       spinning={loading}
       className='h-100'
-      size='large'
     >
       <Col span={24} className='container h-100'>
         {
           (userInfo?.role && data) && (
             <Row gutter={[16, 16]}>
               {
-                (userInfo.role === 'admin' || userInfo.role === 'librarian') && (
+                (userInfo.role === 'admin' || userInfo.role === 'librarian' || userInfo.role === 'member') && (
                   <>
                     <Col lg={8} md={12} sm={24}>
                       <Card style={{ backgroundColor: "rgba(0, 185, 107, 0.1)" }}>
                         <Statistic
                           title={renderStyledTitle(<BookOutlined />, "Books")}
-                          value={data.totalBooks}
+                          value={data.books}
                           valueStyle={{ color: "rgb(0, 185, 107)" }}
                         />
                       </Card>
@@ -116,15 +119,19 @@ const Dashboard = () => {
                         />
                       </Card>
                     </Col>
-                    <Col lg={8} md={12} sm={24}>
-                    <Card style={{ backgroundColor: "rgba(75, 192, 192, 0.1)" }}>
-                        <Statistic
-                          title={renderStyledTitle(<TeamOutlined />, `${userInfo.role === 'admin' ? 'Users' : 'Members'}`)}
-                          value={userInfo.role === 'admin' ? data.users : data.members}
-                          valueStyle={{ color: "rgb(75, 192, 192)" }}
-                        />
-                      </Card>
-                    </Col>
+                    {
+                      userInfo.role !== 'member' && (
+                        <Col lg={8} md={12} sm={24}>
+                          <Card style={{ backgroundColor: "rgba(75, 192, 192, 0.1)" }}>
+                            <Statistic
+                              title={renderStyledTitle(<TeamOutlined />, `${userInfo.role === 'admin' ? 'Users' : 'Members'}`)}
+                              value={userInfo.role === 'admin' ? data.users : data.members}
+                              valueStyle={{ color: "rgb(75, 192, 192)" }}
+                            />
+                          </Card>
+                        </Col>
+                      )
+                    }
                   </>
                 )
               }

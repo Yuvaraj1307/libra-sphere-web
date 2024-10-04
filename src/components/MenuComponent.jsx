@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 
 
 // eslint-disable-next-line react/prop-types
-const MenuComponent = ({ menu = [], setIsLoggedIn }) => {
-    const navigate = useNavigate()
+const MenuComponent = ({ menu = [], setIsLoggedIn, setMenus, setUserInfo }) => {
+    const navigate = useNavigate();
 
     const [selectedKey, setSelectedKey] = useState([]);
 
@@ -25,7 +25,12 @@ const MenuComponent = ({ menu = [], setIsLoggedIn }) => {
             const path = location.pathname.split('/')[1];
             setSelectedKey([path])
         }
-    }, [menu]);
+        return () => {
+            setUserInfo();
+            setMenus();
+            setIsLoggedIn(false);
+        }
+    }, [menu, setIsLoggedIn, setMenus, setUserInfo]);
 
     return (
         <div className='menu-container'>

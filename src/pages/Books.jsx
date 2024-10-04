@@ -116,7 +116,12 @@ const Books = () => {
         message.error('Failed to fetch books')
       }
     } catch (error) {
-      message.error(error?.data || 'Failed to fetch books')
+      if (error.message === 'Invalid token') {
+        message.info('Session expired');
+        window.location.href = 'http://localhost:3000/login'
+      } else {
+        message.error(error?.data || 'Failed to fetch books')
+      }
     } finally {
       setLoading(false);
     }
@@ -141,7 +146,12 @@ const Books = () => {
         message.error(`Failed to ${mode === 'edit' ? 'update' : 'create'} book`);
       }
     } catch (error) {
-      message.error(error?.data || `Failed to ${mode === 'edit' ? 'update' : 'create'} book`);
+      if (error.message === 'Invalid token') {
+        message.info('Session expired');
+        window.location.href = 'http://localhost:3000/login'
+      } else {
+        message.error(error?.data || `Failed to ${mode === 'edit' ? 'update' : 'create'} book`);
+      }
     } finally {
       setLoading(false);
     }
@@ -158,6 +168,10 @@ const Books = () => {
     } else {
       form.setFieldsValue(state)
     }
+
+    return () => {
+      form.resetFields();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, mode, form, userInfo?.library_id]);
 
@@ -165,7 +179,6 @@ const Books = () => {
     <Spin
       spinning={loading}
       className='h-100'
-      size='large'
     >
       <Col span={24} className='container h-100'>
         {
@@ -276,19 +289,23 @@ const Books = () => {
             </Row>
           ) : (
             <>
-              <Row justify='end' style={{ marginBottom: '10px' }}>
-                <Button
-                  type='primary'
-                  size='large'
-                  onClick={handleClickAdd}
-                  icon={<PlusOutlined />}
-                >
-                  Add Book
-                </Button>
-              </Row>
+              {
+                userInfo.role !== 'member' && (
+                  <Row justify='end' style={{ marginBottom: '10px' }}>
+                    <Button
+                      type='primary'
+                      size='large'
+                      onClick={handleClickAdd}
+                      icon={<PlusOutlined />}
+                    >
+                      Add Book
+                    </Button>
+                  </Row>
+                )
+              }
               <Table
                 dataSource={books}
-                columns={columns}
+                columns={userInfo.role === 'member' ? columns.filter((i) => i.key !== 'actions') : columns}
                 scroll={{ x: 'auto' }}
               />
             </>
